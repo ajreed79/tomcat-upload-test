@@ -29,7 +29,7 @@ public class EmbeddedTomcatServer {
         System.out.println("=================================================");
         System.out.println("  Tomcat Safari Upload Bug Reproduction Server");
         System.out.println("=================================================");
-        System.out.println("Starting embedded Tomcat 10.1.52 with HTTPS and HTTP/2...");
+        System.out.println("Starting embedded Tomcat 11.0.18 with HTTPS and HTTP/2...");
 
         Tomcat tomcat = new Tomcat();
 
