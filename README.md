@@ -2,6 +2,8 @@
 
 A minimal reproducible example demonstrating data corruption when uploading 5MB files to Apache Tomcat 9.0.x using Safari browser (macOS and iOS). Uses random data with SHA-256 checksums to detect corruption.
 
+[Apache Bugzilla #69949](https://bz.apache.org/bugzilla/show_bug.cgi?id=69949)
+
 ## Bug Description
 When uploading a 5MB file via Safari browser to Tomcat 9, 10, or 11, the received data is corrupted. This bug does not occur with other browsers (Chrome, Firefox, Edge).
 
