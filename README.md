@@ -63,7 +63,7 @@ When uploading a 5MB file via Safari browser to Tomcat 9, 10, or 11, the receive
    gradlew.bat run
    ```
 
-3. **Open your browser:** Navigate to http://localhost:8080
+3. **Open your browser:** Navigate to http://localhost:8443
 
 4. **Run the tests:**
    - Click "Run Both Tests" to test both upload methods
