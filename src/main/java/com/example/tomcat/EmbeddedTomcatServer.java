@@ -10,8 +10,10 @@ import org.apache.coyote.http11.Http11NioProtocol;
 import org.apache.coyote.http2.Http2Protocol;
 import org.apache.tomcat.util.descriptor.web.SecurityCollection;
 import org.apache.tomcat.util.descriptor.web.SecurityConstraint;
+import org.apache.tomcat.util.net.SSLHostConfig;
+import org.apache.tomcat.util.net.SSLHostConfigCertificate;
 
-import javax.servlet.MultipartConfigElement;
+import jakarta.servlet.MultipartConfigElement;
 import java.io.File;
 
 public class EmbeddedTomcatServer {
@@ -27,7 +29,7 @@ public class EmbeddedTomcatServer {
         System.out.println("=================================================");
         System.out.println("  Tomcat Safari Upload Bug Reproduction Server");
         System.out.println("=================================================");
-        System.out.println("Starting embedded Tomcat 9.0.111 with HTTPS and HTTP/2...");
+        System.out.println("Starting embedded Tomcat 10.1.52 with HTTPS and HTTP/2...");
 
         Tomcat tomcat = new Tomcat();
 
@@ -37,14 +39,21 @@ public class EmbeddedTomcatServer {
         httpsConnector.setScheme("https");
         httpsConnector.setSecure(true);
         httpsConnector.setProperty("SSLEnabled", "true");
+        httpsConnector.setProperty("defaultSSLHostConfigName", "_default_");
 
         // Set keystore location
         File keystoreFile = new File("keystore.jks").getAbsoluteFile();
-        httpsConnector.setProperty("keystoreFile", keystoreFile.getAbsolutePath());
-        httpsConnector.setProperty("keystorePass", "changeit");
-        httpsConnector.setProperty("keyPass", "changeit");
-        httpsConnector.setProperty("keystoreType", "JKS");
-        httpsConnector.setProperty("keyAlias", "tomcat");
+        SSLHostConfig sslHostConfig = new SSLHostConfig();
+        sslHostConfig.setHostName("_default_");
+
+        SSLHostConfigCertificate certificate = new SSLHostConfigCertificate(sslHostConfig, SSLHostConfigCertificate.Type.RSA);
+        certificate.setCertificateKeystoreFile(keystoreFile.getAbsolutePath());
+        certificate.setCertificateKeystorePassword("changeit");
+        certificate.setCertificateKeyPassword("changeit");
+        certificate.setCertificateKeystoreType("JKS");
+        certificate.setCertificateKeyAlias("tomcat");
+        sslHostConfig.addCertificate(certificate);
+        httpsConnector.addSslHostConfig(sslHostConfig);
 
         if (ENABLE_ASYNCIO) {
             System.out.println("✓ Async I/O is enabled");

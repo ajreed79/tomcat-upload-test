@@ -1,6 +1,6 @@
 # Tomcat Safari Upload Bug Reproduction
 
-A minimal reproducible example demonstrating data corruption when uploading 5MB files to Apache Tomcat 9.0.x using Safari browser (macOS and iOS). Uses random data with SHA-256 checksums to detect corruption.
+A minimal reproducible example demonstrating data corruption when uploading 5MB files to Apache Tomcat 10.1.x using Safari browser (macOS and iOS). Uses random data with SHA-256 checksums to detect corruption.
 
 ## Bug Description
 When uploading a 5MB file via Safari browser to Tomcat 9, 10, or 11, the received data is corrupted. This bug does not occur with other browsers (Chrome, Firefox, Edge).
@@ -77,7 +77,7 @@ This application tests two different upload methods to isolate where the corrupt
 
 ### 1. Multipart Upload (Traditional File Upload)
 - Uses `multipart/form-data` encoding
-- Tests Tomcat's multipart parser (`javax.servlet.http.Part`)
+- Tests Tomcat's multipart parser (`jakarta.servlet.http.Part`)
 - Typical for HTML file upload forms
 
 ### 2. Raw POST (Direct Binary Upload)

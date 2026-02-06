@@ -16,12 +16,12 @@ java {
 }
 
 dependencies {
-    // Tomcat 9.0.x embedded (Java EE 8, javax.servlet namespace)
-    implementation 'org.apache.tomcat.embed:tomcat-embed-core:9.0.111'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-jasper:9.0.111'
+    // Tomcat 10.1.x embedded (Jakarta EE 10, jakarta.servlet namespace)
+    implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.52'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-jasper:10.1.52'
 
     // Servlet API
-    compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
+    compileOnly 'jakarta.servlet:jakarta.servlet-api:6.0.0'
 }
 
 application {
