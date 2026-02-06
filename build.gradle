@@ -1,0 +1,29 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'com.example'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+dependencies {
+    // Tomcat 9.0.x embedded (Java EE 8, javax.servlet namespace)
+    implementation 'org.apache.tomcat.embed:tomcat-embed-core:9.0.111'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-jasper:9.0.111'
+
+    // Servlet API
+    compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
+}
+
+application {
+    mainClass = 'com.example.tomcat.EmbeddedTomcatServer'
+}

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tomcat Safari Upload Bug Test</title>
+    <style>
+                <div class="result-item">
+                    <span class="result-label">ENABLE_HTTP2:</span>
+                    <span class="result-value">${typeof result.ENABLE_HTTP2 !== 'undefined' ? result.ENABLE_HTTP2 : '-'}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">ENABLE_ASYNCIO:</span>
+                    <span class="result-value">${typeof result.ENABLE_ASYNCIO !== 'undefined' ? result.ENABLE_ASYNCIO : '-'}</span>
+                </div>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 40px 20px;
+            max-width: 900px;
+            margin: 0 auto;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 25px;
+            border-left: 4px solid #2196f3;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #1976d2;
+        }
+
+        .browser-info {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 25px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+        }
+
+        .test-section h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: #2196f3;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #1976d2;
+        }
+
+        .btn-secondary {
+            background: #ff9800;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #f57c00;
+        }
+
+        .btn-test-all {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-test-all:hover:not(:disabled) {
+            background: #388e3c;
+        }
+
+        .results {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+            overflow-x: auto;
+            max-width: 100%;
+        }
+
+        .result-card {
+            min-width: 0;
+            word-break: break-all;
+        }
+
+        .result-card {
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            background: #fafafa;
+        }
+
+        .result-card h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .result-card.success {
+            border-color: #4caf50;
+            background: #e8f5e9;
+        }
+
+        .result-card.error {
+            border-color: #f44336;
+            background: #ffebee;
+        }
+
+        .result-card.pending {
+            border-color: #ff9800;
+            background: #fff3e0;
+        }
+
+        .result-item {
+            display: block;
+            padding: 8px 0 2px 0;
+            font-size: 13px;
+        }
+        .result-label {
+            display: block;
+            color: #666;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+        .result-value {
+            display: block;
+            font-weight: 600;
+            font-family: monospace;
+            word-break: break-all;
+            margin-bottom: 4px;
+        }
+
+        .result-label {
+            color: #666;
+        }
+
+        .result-value {
+            font-weight: 600;
+            font-family: monospace;
+        }
+
+        .status {
+            font-size: 24px;
+            text-align: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .status.valid {
+            color: #4caf50;
+            word-break: break-word;
+        }
+
+        .status.invalid {
+            color: #f44336;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2196f3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-details {
+            background: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 11px;
+            color: #d32f2f;
+            word-break: break-all;
+        }
+
+        @media (max-width: 768px) {
+            .results {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔬 Tomcat Safari Upload Bug Test</h1>
+        <div class="subtitle">Testing 5MB file upload with random data and checksum validation</div>
+
+        <div class="info-box">
+            <strong>Test Methodology:</strong>
+            This page generates 5MB of random data in the browser, computes its SHA-256 checksum, and uploads it via two different methods:
+            <strong>Multipart</strong> (traditional file upload) and <strong>Raw POST</strong> (binary body).
+            The server computes the checksum of the received data and compares it with the client's checksum. Any corruption will be detected.
+        </div>
+
+        <div class="browser-info" id="browserInfo">
+            Detecting browser...
+        </div>
+
+        <div class="test-section">
+            <h2>Run Tests</h2>
+            <div class="button-group">
+                <button class="btn-primary" id="testMultipart" onclick="testMultipart()">
+                    Test Multipart Upload
+                </button>
+                <button class="btn-secondary" id="testRaw" onclick="testRaw()">
+                    Test Raw POST
+                </button>
+                <button class="btn-test-all" id="testAll" onclick="testAll()">
+                    🚀 Run Both Tests
+                </button>
+            </div>
+
+            <div class="results">
+                <div class="result-card" id="multipartResult">
+                    <h3>Multipart Upload</h3>
+                    <div class="status">⏳ Not tested</div>
+                </div>
+
+                <div class="result-card" id="rawResult">
+                    <h3>Raw POST</h3>
+                    <div class="status">⏳ Not tested</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DATA_SIZE = 5 * 1024 * 1024; // 5MB
+
+        // Display browser info
+        window.addEventListener('DOMContentLoaded', () => {
+            const ua = navigator.userAgent;
+            const isSafari = /Safari/.test(ua) && !/Chrome/.test(ua);
+            const browserInfo = document.getElementById('browserInfo');
+            browserInfo.innerHTML = `
+                <strong>Browser:</strong> ${navigator.userAgent}<br>
+                <strong>Detected as Safari:</strong> ${isSafari ? 'YES ⚠️' : 'NO'}
+                ${isSafari ? '<br><strong>Note:</strong> This is the browser where the bug is expected to occur.' : ''}
+            `;
+        });
+
+
+        function generateRandomData() {
+            console.log('Generating ' + DATA_SIZE + ' bytes of random data (Math.random)...');
+            const arr = new Uint8Array(DATA_SIZE);
+            for (let i = 0; i < arr.length; i++) {
+                arr[i] = Math.floor(Math.random() * 256);
+            }
+            return arr;
+        }
+
+        async function computeSHA256Hex(buffer) {
+            const hashBuffer = await window.crypto.subtle.digest('SHA-256', buffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function testMultipart() {
+            const button = document.getElementById('testMultipart');
+            const resultCard = document.getElementById('multipartResult');
+
+            button.disabled = true;
+            resultCard.className = 'result-card pending';
+            resultCard.innerHTML = `
+                <h3>Multipart Upload</h3>
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Generating random data and uploading 5MB...
+                </div>
+            `;
+
+            try {
+                const data = generateRandomData();
+                const clientChecksum = await computeSHA256Hex(data.buffer);
+                const blob = new Blob([data], { type: 'application/octet-stream' });
+
+                const formData = new FormData();
+                formData.append('file', blob, 'test-data.bin');
+                formData.append('clientChecksum', clientChecksum);
+
+                const startTime = Date.now();
+                const response = await fetch('/upload/multipart', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                displayResult(resultCard, result, clientChecksum);
+
+            } catch (error) {
+                displayError(resultCard, 'Multipart Upload', error);
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        async function testRaw() {
+            const button = document.getElementById('testRaw');
+            const resultCard = document.getElementById('rawResult');
+
+            button.disabled = true;
+            resultCard.className = 'result-card pending';
+            resultCard.innerHTML = `
+                <h3>Raw POST</h3>
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Generating random data and uploading 5MB...
+                </div>
+            `;
+
+            try {
+                const data = generateRandomData();
+                const clientChecksum = await computeSHA256Hex(data.buffer);
+
+                const startTime = Date.now();
+                const response = await fetch('/upload/raw', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/octet-stream',
+                        'X-Client-Checksum': clientChecksum
+                    },
+                    body: data
+                });
+                const result = await response.json();
+                displayResult(resultCard, result, clientChecksum);
+
+            } catch (error) {
+                displayError(resultCard, 'Raw POST', error);
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        async function testAll() {
+            console.log('Running all tests...');
+            await testMultipart();
+            await new Promise(resolve => setTimeout(resolve, 500)); // Brief pause
+            await testRaw();
+            console.log('All tests completed.');
+        }
+
+        function displayResult(card, result, clientChecksum) {
+            // Accept as valid if checksums match and server error count is zero, regardless of 'valid' field
+            const checksumsMatch = result.serverChecksum && clientChecksum && (result.serverChecksum === clientChecksum);
+            console.log('result', result, clientChecksum);
+            const isSuccess = checksumsMatch;
+            card.className = 'result-card ' + (isSuccess ? 'success' : 'error');
+
+            const statusText = isSuccess ? '✓ VALID (Checksums match)' : '✗ CORRUPTED';
+            const statusClass = isSuccess ? 'valid' : 'invalid';
+
+            card.innerHTML = `
+                <h3>${result.method === 'multipart' ? 'Multipart Upload' : 'Raw POST'}</h3>
+                <div class="status ${statusClass}">${statusText}</div>
+                <div class="result-item">
+                    <span class="result-label">Bytes Sent:</span>
+                    <span class="result-value">${DATA_SIZE.toLocaleString()}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Bytes Received:</span>
+                    <span class="result-value">${result.size.toLocaleString()}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Client Checksum:</span>
+                    <span class="result-value">${clientChecksum || '-'}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Server Checksum:</span>
+                    <span class="result-value">${result.serverChecksum || '-'}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">ENABLE_HTTP2:</span>
+                    <span class="result-value">${typeof result.ENABLE_HTTP2 !== 'undefined' ? result.ENABLE_HTTP2 : '-'}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">ENABLE_ASYNCIO:</span>
+                    <span class="result-value">${typeof result.ENABLE_ASYNCIO !== 'undefined' ? result.ENABLE_ASYNCIO : '-'}</span>
+                </div>
+            `;
+
+            if (!isSuccess) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-details';
+                errorDiv.textContent = `Checksums do not match or data corruption detected!\nClient: ${clientChecksum}\nServer: ${result.serverChecksum}\nCheck server console for detailed byte positions.`;
+                card.appendChild(errorDiv);
+            }
+        }
+
+        function displayError(card, method, error) {
+            card.className = 'result-card error';
+            card.innerHTML = `
+                <h3>${method}</h3>
+                <div class="status invalid">✗ ERROR</div>
+                <div class="error-details">${error.message}</div>
+            `;
+        }
+    </script>
+</body>
+</html>
