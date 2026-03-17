@@ -6,6 +6,7 @@ import org.apache.catalina.Wrapper;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.servlets.DefaultServlet;
+import org.apache.catalina.util.ServerInfo;
 import org.apache.coyote.http11.Http11NioProtocol;
 import org.apache.coyote.http2.Http2Protocol;
 import org.apache.tomcat.util.descriptor.web.SecurityCollection;
@@ -27,7 +28,7 @@ public class EmbeddedTomcatServer {
         System.out.println("=================================================");
         System.out.println("  Tomcat Safari Upload Bug Reproduction Server");
         System.out.println("=================================================");
-        System.out.println("Starting embedded Tomcat 9.0.111 with HTTPS and HTTP/2...");
+        System.out.println("Starting embedded Tomcat " + ServerInfo.getServerNumber() + " ...");
 
         Tomcat tomcat = new Tomcat();
 
